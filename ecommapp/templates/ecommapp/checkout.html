@@ -1,0 +1,211 @@
+{% extends 'ecommapp/basic.html' %}
+{% block css %}
+*{padding:0; margin:0; box-sizing: border-box; font-family:sans-serif;}
+
+.container{
+    background: white;
+    max-width: 600px;
+    min-height: 30px;
+    display: flex;
+    justify-content:space-between;
+    align-items: flex-start;
+    padding: 0.2rem 1.2rem;
+}
+.left{
+    flex-basis: 30%;
+}
+.right{
+    flex-basis: 30%;
+}
+form{
+    padding: 1rem;
+}
+h3{
+    margin-top: 1rem;
+    color:#2c3e50;
+    }
+
+form input[type="text"]{
+    width: 100%;
+    padding: 0.5rem 0.7rem;
+    margin: 0.5rem 0;
+    outline: none;
+}
+
+#zip_code   {
+    display: flex;
+    margin-top: 0.5rem;
+}
+#zip select{
+    padding: 0.5rem 0.7rem;
+}
+#zip input[type="number"]{
+    padding: 0.5rem 0.7rem;
+    margin-left: 5px;   
+}
+input[type="submit"]{
+    width: 100%;
+    padding: 0.7rem 1.5rem;
+    background: #34495e;
+    color: white;
+    border: none;
+    outline: none;
+    margin-top: 1rem;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover{
+    background: #2c3e50;
+}
+#cardno{
+    display:flex;
+    margin-right:5px;
+}
+#year{
+    display:flex;
+    margin-top:0.5px;
+}
+#cvv{
+    padding: 0.5rem 0.7rem
+}
+
+@media only screen and (max-width: 770px){
+    .container{
+        flex-direction: column;
+    }
+    body{
+        overflow-x: hidden;
+    }
+}
+
+
+{% endblock %}
+{% block body %}
+<header>
+<div class="container">
+    <div class="col my-4">
+        <h2>My Shopping Cart Express Checkout - Review Your Cart Items</h2>
+        <div class="my-4">
+            <ul class="list-group" id="items">
+            </ul>
+            <b>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mt-3">
+                    <li class="breadcrumb-item active" aria-current="page"> Cart Total is Rs.<span id="totalPrice"></span>.Enter your details and place your order </li>
+                </ol>    
+           </nav></b>  
+</header>            
+            
+        </div>
+    </div>
+    <div class="col my-4">
+       <!--<link rel="stylesheet" type="text/css" href="checkout.css">-->
+<header>    
+            <div class="container">
+                <div class="left">
+                    <h3>BILLING ADDRESS</h3>
+                    <form method="post" action="/ecommapp/checkout/">{% csrf_token %}
+                        <input type="hidden" name="itemsJson" id="itemsJson">
+                        <input type="hidden" name="amount" id="amount">
+                        Full name
+                        <input type="text" class="form-control"id="name" name="name" placeholder="Enter name">
+                        Email
+                        <input type="text" class="form-control" id="email" name="email" placeholder="Enter email">
+                        Address
+                        <input type="text"class="form-control" id="address" name="address" placeholder="Enter address">
+                        City
+                        <input type="text" class="form-control" id="city" name="city" placeholder="Enter City">
+                        <div id="zip" name="zip">
+                            <label>
+                                State
+                                <select>
+                                    <option>Choose State..</option>
+                                    <option>Rajasthan</option>
+                                    <option>Hariyana</option>
+                                    <option>Uttar Pradesh</option>
+                                    <option>Madhya Pradesh</option>
+                                </select>
+                            </label>
+                            <label>
+                                Zip code
+                                <input type="number" id="zip_code" name="zip_code" placeholder="Zip code">
+                            </label>
+                        </div>
+                    
+    
+                </div>
+                <div class="right">
+                    <h3>PAYMENT</h3>
+            <!--<form method="post" action="/ecommapp/checkout/">{% csrf_token %}-->
+                Accepted Card <br>
+                <img src="card1.png" width="100">
+                <img src="card2.png" width="50">
+                <br><br>
+
+                Credit card number
+            <input type="text"  class="form-control"id="cardno" name="cardno"  placeholder="Enter card number">
+                
+                Exp month
+                <input type="text" id="expm" name="expm"  placeholder="Enter Month">
+                <div id="year" name="year" placeholder="Choose Year">
+                    <label>
+                        Exp year
+                        <select>
+                            <option>Choose Year..</option>
+                            <option>2022</option>
+                            <option>2023</option>
+                            <option>2024</option>
+                            <option>2025</option>
+                        </select>
+                    </label>
+                        <label>
+                        CVV
+                        <input type="number"  class="form-control" id="cvv" name="cvv" placeholder="CVV">
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit to PlaceOrder</button>
+            </form>
+            
+</div>
+</div>
+</header>
+{% endblock %}
+{% block js %}
+<script>
+if (localStorage.getItem('cart') == null) {
+    var cart = {};
+} else {
+    cart = JSON.parse(localStorage.getItem('cart'));
+}
+console.log(cart);
+var sum = 0;
+var totalPrice = 0;
+if ($.isEmptyObject(cart)) {
+    //if object is empty
+    mystr = `<p>Your cart is empty, please add some items to your cart before checking out!</p>`
+    $('#items').append(mystr);
+} else {
+    for (item in cart) {
+        let name = cart[item][1];
+        let qty = cart[item][0];
+        let itemPrice=cart[item][2];
+        sum = sum + qty;
+        totalPrice= totalPrice + qty * itemPrice;
+        mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                    ${name}
+                    <span class="badge badge-primary badge-pill">${qty}</span>
+                </li>`
+        $('#items').append(mystr);
+    }
+}
+document.getElementById('cart').innerHTML = sum;
+document.getElementById('totalPrice').innerHTML = totalPrice;
+$('#itemsJson').val(JSON.stringify(cart));
+{% if thank %}
+alert('Thanks for ordering with us. Your order is {{id}}. Use it to track your order');
+localStorage.clear();
+document.location = "/ecommapp";
+{% endif %}
+$('#amount').val($('#totalPrice').html())
+</script>
+{% endblock %}
